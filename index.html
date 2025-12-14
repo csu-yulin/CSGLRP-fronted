@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>南网法险通 - 法律风险案例管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#eef7ff',
+                100: '#d9edff',
+                200: '#bce0ff',
+                300: '#8ecaff',
+                400: '#59aaff',
+                500: '#2f86ff',
+                600: '#0066ff', // Secondary Brand Blue
+                700: '#005bac', // Southern Power Grid Blue (Primary)
+                800: '#004d8d',
+                900: '#064074',
+                950: '#04284d',
+              },
+              slate: {
+                850: '#1e293b', // Custom dark slate for contrast
+              }
+            },
+            boxShadow: {
+              'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+              'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+              'drawer': '-4px 0 24px rgba(0,0,0,0.08)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #f8fafc; /* Slate 50/100ish */
+        color: #1e293b;
+      }
+      /* Custom scrollbar - thinner and lighter */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+         background: #e2e8f0;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+         background: #cbd5e1;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
+    "axios": "https://esm.sh/axios@1.6.8",
+    "lucide-react": "https://esm.sh/lucide-react@0.363.0?deps=react@18.3.1",
+    "recharts": "https://esm.sh/recharts@2.12.3?deps=react@18.3.1,react-dom@18.3.1",
+    "react-hot-toast": "https://esm.sh/react-hot-toast@2.4.1?deps=react@18.3.1,react-dom@18.3.1",
+    "react-hook-form": "https://esm.sh/react-hook-form@7.51.1?deps=react@18.3.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
+    <div id="root"></div>
+  </body>
+</html>
