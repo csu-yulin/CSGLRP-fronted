@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FileText, Activity, AlertTriangle, CheckCircle, ArrowRight, Shield, Clock } from 'lucide-react';
+import { FileText, Activity, AlertTriangle, ArrowRight, Shield, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { caseService } from '../services/api';
 import { Case } from '../types';
@@ -14,11 +14,21 @@ const Dashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Dynamic greeting based on hour
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 5) return '夜深了';
+    if (hour < 9) return '早上好';
+    if (hour < 12) return '上午好';
+    if (hour < 14) return '中午好';
+    if (hour < 18) return '下午好';
+    return '晚上好';
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // 1. Get Total Cases (fetch page 1 size 5 just to get totalElements and recent list)
-        // Use caseService.getList
         const casesRes = await caseService.getList({
           page: 1, 
           size: 5, 
@@ -27,7 +37,6 @@ const Dashboard: React.FC = () => {
         });
         
         // 2. Get Tags to find top risk type
-        // Use caseService.getTags
         const tagsRes = await caseService.getTags();
         
         if (casesRes.data.code === 200 && tagsRes.data.code === 200) {
@@ -97,7 +106,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="relative z-10 max-w-2xl">
           <h1 className="text-3xl font-bold mb-3">
-            下午好，{user?.name}
+            {getGreeting()}，{user?.name}
           </h1>
           <p className="text-brand-100 mb-6 text-lg font-light">
             欢迎回到南网法险通。系统目前共收录 <span className="font-bold text-white">{loading ? '...' : statsData.totalCases}</span> 条法律风险案例。

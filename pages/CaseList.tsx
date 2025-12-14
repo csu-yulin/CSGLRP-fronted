@@ -21,6 +21,14 @@ const CaseList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   
+  // Real Statistics State
+  const [statsData, setStatsData] = useState({
+    totalCount: 0,
+    topTagName: '...',
+    uniqueTagsCount: 0,
+    recentCount: 0
+  });
+
   // Filters
   const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
   const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '');
@@ -31,18 +39,24 @@ const CaseList: React.FC = () => {
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Stats (Mocked or Calculated)
-  const stats = [
-    { label: '总案例数', value: totalElements || 124, icon: FileText, color: 'text-brand-600', bg: 'bg-brand-50' },
-    { label: '本月新增', value: 8, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: '高频标签', value: '盗电', icon: TagIcon, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: '待处理', value: 3, icon: Filter, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  ];
-
-  // Fetch Tags for filter dropdown
+  // Fetch Tags and Calculate Stats
   useEffect(() => {
     caseService.getTags().then(res => {
-      if (res.data.code === 200) setAvailableTags(res.data.data);
+      if (res.data.code === 200) {
+        const tags = res.data.data;
+        setAvailableTags(tags);
+        
+        // Calculate Tag Stats
+        const topTag = tags.length > 0 
+          ? tags.reduce((prev, current) => (prev.count > current.count) ? prev : current)
+          : { tag: '暂无', count: 0 };
+        
+        setStatsData(prev => ({
+          ...prev,
+          topTagName: topTag.tag,
+          uniqueTagsCount: tags.length
+        }));
+      }
     });
   }, []);
 
@@ -56,7 +70,7 @@ const CaseList: React.FC = () => {
         sortBy: 'createDate'
       };
       if (keyword) params.keyword = keyword;
-      if (selectedTag) params.tags = [selectedTag]; // Backend expects list
+      if (selectedTag) params.tags = [selectedTag]; 
 
       // Use caseService
       const res = await caseService.getList(params);
@@ -65,6 +79,14 @@ const CaseList: React.FC = () => {
         setCases(res.data.data.content);
         setTotalPages(res.data.data.totalPages);
         setTotalElements(res.data.data.totalElements);
+        
+        // Update stats based on real response
+        setStatsData(prev => ({
+          ...prev,
+          totalCount: res.data.data.totalElements,
+          // Since we are sorting by date desc, the count of this page represents "recent" roughly
+          recentCount: res.data.data.content.length 
+        }));
       } else {
         toast.error(res.data.message);
       }
@@ -103,17 +125,17 @@ const CaseList: React.FC = () => {
       };
 
       if (editingCase) {
-        // Use caseService.update
         await caseService.update(editingCase.id, payload);
         toast.success('案例更新成功');
       } else {
-        // Use caseService.create
         await caseService.create(payload);
         toast.success('案例创建成功');
       }
       setIsModalOpen(false);
       setEditingCase(null);
       fetchCases();
+      // Refresh tags
+      caseService.getTags().then(res => res.data.code === 200 && setAvailableTags(res.data.data));
     } catch (error) {
       console.error(error);
       toast.error('操作失败');
@@ -125,7 +147,6 @@ const CaseList: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('确定要删除这个案例吗？此操作无法撤销。')) return;
     try {
-      // Use caseService.delete
       await caseService.delete(id);
       toast.success('删除成功');
       fetchCases();
@@ -139,6 +160,14 @@ const CaseList: React.FC = () => {
         setPage(newPage);
      }
   };
+
+  // Dynamic Stats configuration
+  const stats = [
+    { label: '总案例数', value: statsData.totalCount, icon: FileText, color: 'text-brand-600', bg: 'bg-brand-50' },
+    { label: '当前展示', value: statsData.recentCount, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: '高频标签', value: statsData.topTagName, icon: TagIcon, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: '标签总数', value: statsData.uniqueTagsCount, icon: Filter, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  ];
 
   return (
     <div className="space-y-6 pb-20">
@@ -162,15 +191,15 @@ const CaseList: React.FC = () => {
            )}
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Now using real data */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
            {stats.map((stat, idx) => (
              <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
-                <div>
-                   <p className="text-xs text-slate-500 font-medium mb-1">{stat.label}</p>
-                   <p className="text-xl font-bold text-slate-800">{stat.value}</p>
+                <div className="min-w-0">
+                   <p className="text-xs text-slate-500 font-medium mb-1 truncate">{stat.label}</p>
+                   <p className="text-xl font-bold text-slate-800 truncate" title={String(stat.value)}>{stat.value}</p>
                 </div>
-                <div className={`p-2 rounded-lg ${stat.bg}`}>
+                <div className={`p-2 rounded-lg ${stat.bg} flex-shrink-0 ml-2`}>
                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
              </div>
