@@ -122,7 +122,8 @@ const CaseList: React.FC = () => {
         riskSummary: data.riskSummary,
         legalProvisions: data.legalProvisions,
         preventionMeasures: data.preventionMeasures.map(m => m.value).filter(Boolean),
-        tags: data.tags.split(/[,，]/).map(t => t.trim()).filter(Boolean)
+        tags: data.tags.split(/[,，]/).map(t => t.trim()).filter(Boolean),
+        attachments: data.attachments // Added attachments here
       };
 
       if (editingCase) {
