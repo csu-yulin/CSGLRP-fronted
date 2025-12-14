@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { caseService } from '../services/api';
-import { Case, CaseFormData } from '../types';
+import { caseService, fileService } from '../services/api';
+import { Case, CaseFormData, Attachment } from '../types';
 import { useAuth } from '../context/AuthContext';
 import CaseModal from '../components/CaseModal';
-import { ArrowLeft, Calendar, User, Tag, AlertTriangle, Shield, CheckCircle, FileText, Edit, Trash, Printer } from 'lucide-react';
+import { 
+  ArrowLeft, Calendar, User, Tag, AlertTriangle, Shield, CheckCircle, 
+  FileText, Edit, Trash, Printer, ChevronDown, ChevronUp, Download, 
+  Image as ImageIcon, File as FileIcon, Eye, Paperclip, X
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CaseDetail: React.FC = () => {
@@ -16,11 +20,15 @@ const CaseDetail: React.FC = () => {
   
   // Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  // Attachment State
+  const [isAttachmentsExpanded, setIsAttachmentsExpanded] = useState(false);
+  const [selectedAttachments, setSelectedAttachments] = useState<Set<string>>(new Set());
+  const [previewImage, setPreviewImage] = useState<Attachment | null>(null);
 
   const fetchCase = async () => {
     setLoading(true);
     try {
-      // Use caseService.getById
       const res = await caseService.getById(id!);
       if (res.data.code === 200) {
         setData(res.data.data);
@@ -44,7 +52,6 @@ const CaseDetail: React.FC = () => {
   const handleDelete = async () => {
     if(!window.confirm("确定删除此案例?")) return;
     try {
-      // Use caseService.delete
       await caseService.delete(id!);
       toast.success("已删除");
       navigate('/cases');
@@ -60,10 +67,10 @@ const CaseDetail: React.FC = () => {
         riskSummary: formData.riskSummary,
         legalProvisions: formData.legalProvisions,
         preventionMeasures: formData.preventionMeasures.map(m => m.value).filter(Boolean),
-        tags: formData.tags.split(/[,，]/).map(t => t.trim()).filter(Boolean)
+        tags: formData.tags.split(/[,，]/).map(t => t.trim()).filter(Boolean),
+        attachments: formData.attachments
     };
     try {
-      // Use caseService.update
       await caseService.update(id!, payload);
       toast.success("更新成功");
       setIsEditModalOpen(false);
@@ -78,6 +85,71 @@ const CaseDetail: React.FC = () => {
      window.print();
   };
 
+  // Attachment Logic
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return <ImageIcon className="w-5 h-5 text-purple-500" />;
+    if (mimeType.includes('pdf')) return <FileText className="w-5 h-5 text-red-500" />;
+    if (mimeType.includes('word') || mimeType.includes('officedocument')) return <FileText className="w-5 h-5 text-blue-500" />;
+    if (mimeType.includes('sheet') || mimeType.includes('excel')) return <FileText className="w-5 h-5 text-green-500" />;
+    return <FileIcon className="w-5 h-5 text-slate-500" />;
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const toggleAttachmentSelection = (ossKey: string) => {
+    const newSet = new Set(selectedAttachments);
+    if (newSet.has(ossKey)) {
+      newSet.delete(ossKey);
+    } else {
+      newSet.add(ossKey);
+    }
+    setSelectedAttachments(newSet);
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedAttachments.size === 0) return;
+    if (!window.confirm(`确定删除选中的 ${selectedAttachments.size} 个文件吗？`)) return;
+
+    try {
+      await fileService.deleteBatch(Array.from(selectedAttachments));
+      // Refresh local data optimistically or fetch
+      if (data) {
+        const remaining = data.attachments?.filter(a => !selectedAttachments.has(a.ossKey)) || [];
+        setData({ ...data, attachments: remaining });
+        // Also update backend case object to remove reference if needed? 
+        // Usually backend handles this relation, but we should update case attachments array via update API if strict consistency needed.
+        // Assuming file service delete handles cleanup or we just update display.
+        // To be safe, we should also update the case itself to remove references.
+        await caseService.update(data.id, { ...data, attachments: remaining });
+      }
+      setSelectedAttachments(new Set());
+      toast.success("批量删除成功");
+    } catch (error) {
+      toast.error("批量删除失败");
+    }
+  };
+
+  const handleSingleDelete = async (attachment: Attachment) => {
+    if (!window.confirm(`确定删除 ${attachment.fileName} 吗？`)) return;
+    try {
+      await fileService.delete(attachment.ossKey);
+      if (data) {
+        const remaining = data.attachments?.filter(a => a.ossKey !== attachment.ossKey) || [];
+        setData({ ...data, attachments: remaining });
+        await caseService.update(data.id, { ...data, attachments: remaining });
+      }
+      toast.success("删除成功");
+    } catch (e) {
+      toast.error("删除失败");
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[500px]">
       <div className="w-8 h-8 border-4 border-slate-200 border-t-brand-600 rounded-full animate-spin"></div>
@@ -86,8 +158,34 @@ const CaseDetail: React.FC = () => {
   
   if (!data) return <div className="p-10 text-center text-slate-500">未找到案例</div>;
 
+  const hasAttachments = data.attachments && data.attachments.length > 0;
+  const showCollapse = hasAttachments && data.attachments!.length > 3;
+  // If not expanded and we should collapse, show only 3. Otherwise show all.
+  const displayedAttachments = (showCollapse && !isAttachmentsExpanded) 
+    ? data.attachments!.slice(0, 3) 
+    : (data.attachments || []);
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 print:pb-0 print:max-w-none">
+      
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm" onClick={() => setPreviewImage(null)}>
+          <button className="absolute top-4 right-4 text-white hover:text-gray-300">
+             <X className="w-8 h-8" />
+          </button>
+          <img 
+            src={previewImage.url} 
+            alt={previewImage.fileName} 
+            className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl rounded-lg"
+            onClick={(e) => e.stopPropagation()} 
+          />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full text-white text-sm">
+             {previewImage.fileName}
+          </div>
+        </div>
+      )}
+
       {/* Top Nav - Hidden on Print */}
       <div className="flex items-center justify-between print:hidden">
         <button onClick={() => navigate('/cases')} className="flex items-center text-slate-500 hover:text-brand-600 transition-colors font-medium">
@@ -203,6 +301,106 @@ const CaseDetail: React.FC = () => {
                    </div>
                  )}
                </div>
+             </section>
+
+             {/* Attachments Section */}
+             <section className="print:mb-6 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-slate-800 flex items-center print:text-lg">
+                    <span className="w-1.5 h-6 bg-indigo-500 mr-3 rounded-full print:hidden"></span>
+                    附件资料
+                  </h2>
+                  {user?.isAdmin && selectedAttachments.size > 0 && (
+                     <button 
+                       onClick={handleBatchDelete}
+                       className="text-sm text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md flex items-center transition-colors print:hidden"
+                     >
+                        <Trash className="w-4 h-4 mr-1.5" /> 批量删除 ({selectedAttachments.size})
+                     </button>
+                  )}
+                </div>
+
+                {!hasAttachments ? (
+                   <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-6 text-center text-slate-400 text-sm print:hidden">
+                      暂无附件
+                   </div>
+                ) : (
+                  <div className="space-y-3">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2">
+                        {displayedAttachments.map((file) => (
+                           <div key={file.ossKey} className={`relative flex items-center p-3 rounded-lg border bg-white transition-all group ${
+                              selectedAttachments.has(file.ossKey) ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-brand-200 hover:shadow-sm'
+                           } print:border-slate-300`}>
+                              {/* Checkbox for Admin */}
+                              {user?.isAdmin && (
+                                 <input 
+                                    type="checkbox" 
+                                    className="absolute top-3 right-3 w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 print:hidden opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
+                                    checked={selectedAttachments.has(file.ossKey)}
+                                    onChange={() => toggleAttachmentSelection(file.ossKey)}
+                                 />
+                              )}
+
+                              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mr-3 text-slate-500 flex-shrink-0 print:bg-white print:border print:border-slate-200">
+                                 {getFileIcon(file.fileType)}
+                              </div>
+                              <div className="flex-1 min-w-0 mr-6">
+                                 <p className="text-sm font-medium text-slate-700 truncate mb-0.5" title={file.fileName}>{file.fileName}</p>
+                                 <div className="flex items-center text-xs text-slate-400">
+                                    <span className="mr-2">{formatSize(file.fileSize)}</span>
+                                    <span>{file.uploadDate?.split('T')[0]}</span>
+                                 </div>
+                              </div>
+                              
+                              {/* Actions */}
+                              <div className="flex items-center gap-1 print:hidden">
+                                 {file.fileType.startsWith('image/') ? (
+                                    <button 
+                                      onClick={() => setPreviewImage(file)}
+                                      className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded" 
+                                      title="预览"
+                                    >
+                                       <Eye className="w-4 h-4" />
+                                    </button>
+                                 ) : (
+                                    <a 
+                                      href={file.url} 
+                                      download={file.fileName}
+                                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded" 
+                                      title="下载"
+                                    >
+                                       <Download className="w-4 h-4" />
+                                    </a>
+                                 )}
+                                 {user?.isAdmin && (
+                                    <button 
+                                      onClick={() => handleSingleDelete(file)}
+                                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity" 
+                                      title="删除"
+                                    >
+                                       <Trash className="w-4 h-4" />
+                                    </button>
+                                 )}
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                     
+                     {/* Show More / Less */}
+                     {showCollapse && (
+                        <button 
+                           onClick={() => setIsAttachmentsExpanded(!isAttachmentsExpanded)}
+                           className="w-full py-2 flex items-center justify-center text-sm text-slate-500 hover:text-brand-600 hover:bg-slate-50 rounded-lg border border-transparent hover:border-slate-100 transition-all print:hidden"
+                        >
+                           {isAttachmentsExpanded ? (
+                              <>收起附件 <ChevronUp className="w-4 h-4 ml-1" /></>
+                           ) : (
+                              <>查看全部 {data.attachments!.length} 个附件 <ChevronDown className="w-4 h-4 ml-1" /></>
+                           )}
+                        </button>
+                     )}
+                  </div>
+                )}
              </section>
           </div>
 

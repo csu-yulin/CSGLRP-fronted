@@ -1,7 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form';
-import { X, Plus, Trash2, Save, FileText, ShieldAlert, CheckCircle, HelpCircle } from 'lucide-react';
-import { Case, CaseFormData } from '../types';
+import { useDropzone } from 'react-dropzone';
+import { 
+  X, Plus, Trash2, Save, FileText, ShieldAlert, CheckCircle, 
+  HelpCircle, UploadCloud, Paperclip, File as FileIcon, Image as ImageIcon,
+  GripVertical, Loader2
+} from 'lucide-react';
+import { Case, CaseFormData, Attachment } from '../types';
+import { fileService } from '../services/api';
+import toast from 'react-hot-toast';
 
 interface CaseModalProps {
   isOpen: boolean;
@@ -11,15 +18,24 @@ interface CaseModalProps {
   isSubmitting: boolean;
 }
 
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initialData, isSubmitting }) => {
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<CaseFormData>({
+  const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CaseFormData>({
     defaultValues: {
       title: '',
       caseRecord: '',
       riskSummary: '',
       tags: '',
       legalProvisions: [{ lawName: '', content: '' }],
-      preventionMeasures: [{ value: '' }]
+      preventionMeasures: [{ value: '' }],
+      attachments: []
     }
   });
 
@@ -33,7 +49,13 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
     name: "preventionMeasures"
   });
 
-  // Effect to handle body scroll lock and reset data
+  const attachments = watch('attachments') || [];
+  const [uploading, setUploading] = useState(false);
+  
+  // DnD State
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+
+  // Initialize form
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -48,7 +70,8 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
             : [{ lawName: '', content: '' }],
           preventionMeasures: initialData.preventionMeasures && initialData.preventionMeasures.length > 0 
             ? initialData.preventionMeasures.map(m => ({ value: m })) 
-            : [{ value: '' }]
+            : [{ value: '' }],
+          attachments: initialData.attachments || []
         });
       } else {
         reset({
@@ -57,7 +80,8 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
           riskSummary: '',
           tags: '',
           legalProvisions: [{ lawName: '', content: '' }],
-          preventionMeasures: [{ value: '' }]
+          preventionMeasures: [{ value: '' }],
+          attachments: []
         });
       }
     } else {
@@ -65,6 +89,99 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen, initialData, reset]);
+
+  // File Upload Logic
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    // 1. Validation
+    const validFiles = acceptedFiles.filter(file => {
+      const isSizeValid = file.size <= 50 * 1024 * 1024; // 50MB
+      if (!isSizeValid) toast.error(`${file.name} 超过 50MB 限制`);
+      return isSizeValid;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setUploading(true);
+    const loadingToast = toast.loading(`正在上传 ${validFiles.length} 个文件...`);
+
+    try {
+      const res = await fileService.uploadBatch(validFiles);
+      if (res.data.code === 200) {
+        const newAttachments = res.data.data;
+        const currentAttachments = watch('attachments') || [];
+        setValue('attachments', [...currentAttachments, ...newAttachments]);
+        toast.success('上传成功');
+      } else {
+        toast.error('上传失败');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('上传过程中发生错误');
+    } finally {
+      toast.dismiss(loadingToast);
+      setUploading(false);
+    }
+  }, [setValue, watch]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': [],
+      'application/pdf': [],
+      'application/msword': [], 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [], // .docx
+      'application/vnd.ms-excel': [],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [], // .xlsx
+      'text/plain': []
+    },
+    maxSize: 52428800 // 50MB double check
+  });
+
+  // Attachment Actions
+  const handleRemoveAttachment = async (index: number) => {
+    const fileToRemove = attachments[index];
+    if (!fileToRemove) return;
+
+    if (!window.confirm(`确定删除附件 "${fileToRemove.fileName}" 吗？`)) return;
+
+    try {
+      // Optimistically remove from UI first? No, let's ensure consistency.
+      await fileService.delete(fileToRemove.ossKey);
+      const newAttachments = [...attachments];
+      newAttachments.splice(index, 1);
+      setValue('attachments', newAttachments);
+      toast.success('附件已删除');
+    } catch (error) {
+      toast.error('删除附件失败');
+    }
+  };
+
+  // Drag and Drop Sorting Logic (Native HTML5)
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // Transparent drag image
+    // e.dataTransfer.setDragImage(new Image(), 0, 0); 
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    
+    if (draggedItemIndex === null || draggedItemIndex === index) return;
+
+    const newAttachments = [...attachments];
+    const draggedItem = newAttachments[draggedItemIndex];
+    newAttachments.splice(draggedItemIndex, 1);
+    newAttachments.splice(index, 0, draggedItem);
+    
+    setValue('attachments', newAttachments);
+    setDraggedItemIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemIndex(null);
+  };
 
   const onFormSubmit: SubmitHandler<CaseFormData> = async (data) => {
     await onSubmit(data);
@@ -263,6 +380,82 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
                 </div>
               </div>
 
+              {/* Attachments Section (NEW) */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                <div className="flex items-center border-b border-slate-100 pb-4">
+                   <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3">
+                      <Paperclip className="w-4 h-4" />
+                   </div>
+                   <h3 className="text-base font-bold text-slate-800">附件管理</h3>
+                </div>
+
+                {/* Dropzone */}
+                <div 
+                  {...getRootProps()} 
+                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
+                    isDragActive 
+                      ? 'border-brand-500 bg-brand-50' 
+                      : 'border-slate-300 hover:border-brand-400 hover:bg-slate-50'
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center">
+                    {uploading ? (
+                      <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-3" />
+                    ) : (
+                      <UploadCloud className={`w-10 h-10 mb-3 ${isDragActive ? 'text-brand-500' : 'text-slate-400'}`} />
+                    )}
+                    <p className="text-sm font-medium text-slate-700">
+                      {isDragActive ? '释放以上传文件' : '点击或拖拽文件到此处上传'}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      支持图片、PDF、Word、Excel (单个文件最大 50MB)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Attachment List with DnD Sorting */}
+                {attachments.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">已上传 ({attachments.length}) - 拖拽可排序</p>
+                    <div className="space-y-2">
+                      {attachments.map((file, index) => (
+                        <div 
+                          key={file.ossKey}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`flex items-center justify-between p-3 rounded-lg border bg-white transition-all ${
+                            draggedItemIndex === index ? 'opacity-50 border-dashed border-brand-400' : 'border-slate-200 hover:border-brand-200 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex items-center flex-1 min-w-0">
+                            <div className="cursor-move text-slate-300 hover:text-slate-500 mr-2 p-1">
+                               <GripVertical className="w-4 h-4" />
+                            </div>
+                            <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center mr-3 text-slate-500 flex-shrink-0">
+                               {file.fileType.startsWith('image/') ? <ImageIcon className="w-4 h-4" /> : <FileIcon className="w-4 h-4" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                               <p className="text-sm font-medium text-slate-700 truncate">{file.fileName}</p>
+                               <p className="text-xs text-slate-400">{formatFileSize(file.fileSize)}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAttachment(index)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors ml-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </form>
           </div>
 
@@ -278,7 +471,7 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
             <button
               type="submit"
               form="case-form"
-              disabled={isSubmitting}
+              disabled={isSubmitting || uploading}
               className="flex items-center px-8 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 rounded-lg shadow-md hover:shadow-lg hover:shadow-brand-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

@@ -16,7 +16,8 @@
     "react-hot-toast": "^2.6.0",
     "axios": "^1.13.2",
     "react-dom": "^19.2.3",
-    "react-hook-form": "^7.68.0"
+    "react-hook-form": "^7.68.0",
+    "react-dropzone": "14.2.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

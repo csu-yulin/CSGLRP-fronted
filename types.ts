@@ -37,15 +37,25 @@ export interface LegalProvision {
   content: string;
 }
 
+export interface Attachment {
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadDate: string;
+  url: string;
+  ossKey: string;
+}
+
 export interface Case {
-  id: string; // Backend sends "id" in Result wrapper, or we map _id to id
+  id: string; 
   title: string;
-  caseRecord: string; // Formerly content
-  legalProvisions: LegalProvision[]; // Formerly regulations
+  caseRecord: string;
+  legalProvisions: LegalProvision[];
   riskSummary: string;
-  preventionMeasures: string[]; // Formerly preventativeMeasures
+  preventionMeasures: string[]; 
   tags: string[];
-  createDate: string; // Formerly createdAt
+  attachments?: Attachment[]; // New field
+  createDate: string;
   updateDate: string;
   author: string;
 }
@@ -61,6 +71,7 @@ export interface CaseFormData {
   caseRecord: string;
   legalProvisions: { lawName: string; content: string }[];
   riskSummary: string;
-  preventionMeasures: { value: string }[]; // Helper for useFieldArray
-  tags: string; // Helper for comma separated input
+  preventionMeasures: { value: string }[];
+  tags: string;
+  attachments: Attachment[]; // Form now manages attachments
 }
