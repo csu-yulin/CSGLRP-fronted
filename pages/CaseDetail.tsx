@@ -331,20 +331,23 @@ const CaseDetail: React.FC = () => {
                            <div key={file.ossKey} className={`relative flex items-center p-3 rounded-lg border bg-white transition-all group ${
                               selectedAttachments.has(file.ossKey) ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-brand-200 hover:shadow-sm'
                            } print:border-slate-300`}>
-                              {/* Checkbox for Admin */}
+                              
+                              {/* Checkbox for Admin - Moved to left side to prevent overlap */}
                               {user?.isAdmin && (
-                                 <input 
-                                    type="checkbox" 
-                                    className="absolute top-3 right-3 w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 print:hidden opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
-                                    checked={selectedAttachments.has(file.ossKey)}
-                                    onChange={() => toggleAttachmentSelection(file.ossKey)}
-                                 />
+                                 <div className="flex-shrink-0 mr-3">
+                                    <input 
+                                       type="checkbox" 
+                                       className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity block"
+                                       checked={selectedAttachments.has(file.ossKey)}
+                                       onChange={() => toggleAttachmentSelection(file.ossKey)}
+                                    />
+                                 </div>
                               )}
 
                               <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mr-3 text-slate-500 flex-shrink-0 print:bg-white print:border print:border-slate-200">
                                  {getFileIcon(file.fileType)}
                               </div>
-                              <div className="flex-1 min-w-0 mr-6">
+                              <div className="flex-1 min-w-0 mr-3">
                                  <p className="text-sm font-medium text-slate-700 truncate mb-0.5" title={file.fileName}>{file.fileName}</p>
                                  <div className="flex items-center text-xs text-slate-400">
                                     <span className="mr-2">{formatSize(file.fileSize)}</span>
