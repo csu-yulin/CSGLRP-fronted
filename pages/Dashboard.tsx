@@ -98,40 +98,40 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-brand-700 to-brand-900 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-           <Shield className="w-64 h-64 -translate-y-1/2 translate-x-1/4" />
+      <div className="bg-gradient-to-r from-brand-700 to-brand-900 rounded-2xl p-5 md:p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10">
+           <Shield className="w-32 h-32 md:w-64 md:h-64 -translate-y-1/2 translate-x-1/4" />
         </div>
         <div className="relative z-10 max-w-2xl">
-          <h1 className="text-3xl font-bold mb-3">
+          <h1 className="text-xl md:text-3xl font-bold mb-2 md:mb-3">
             {getGreeting()}，{user?.name}
           </h1>
-          <p className="text-brand-100 mb-6 text-lg font-light">
+          <p className="text-brand-100 mb-4 md:mb-6 text-sm md:text-lg font-light">
             欢迎回到南网法险通。系统目前共收录 <span className="font-bold text-white">{loading ? '...' : statsData.totalCases}</span> 条法律风险案例。
           </p>
-          <Link to="/cases" className="inline-flex items-center px-5 py-2.5 bg-white text-brand-700 rounded-lg font-medium text-sm hover:bg-brand-50 transition-colors shadow-sm">
-            进入案例库 <ArrowRight className="w-4 h-4 ml-2" />
+          <Link to="/cases" className="inline-flex items-center px-4 py-2 md:px-5 md:py-2.5 bg-white text-brand-700 rounded-lg font-medium text-xs md:text-sm hover:bg-brand-50 transition-colors shadow-sm">
+            进入案例库 <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-2" />
           </Link>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className={`bg-white p-6 rounded-xl border ${stat.border} shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-xl ${stat.bg}`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+          <div key={index} className={`bg-white p-4 md:p-6 rounded-xl border ${stat.border} shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300`}>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className={`p-2 md:p-3 rounded-xl ${stat.bg}`}>
+                <stat.icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
               </div>
-              <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full">实时</span>
+              <span className="text-[10px] md:text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full">实时</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">{stat.label}</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-slate-800 tracking-tight">{stat.value}</p>
-                {stat.subValue && <span className="text-sm text-slate-400 font-medium">{stat.subValue}</span>}
+              <p className="text-xs md:text-sm font-medium text-slate-500 mb-0.5 md:mb-1 truncate">{stat.label}</p>
+              <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
+                <p className="text-xl md:text-3xl font-bold text-slate-800 tracking-tight truncate">{stat.value}</p>
+                {stat.subValue && <span className="text-xs md:text-sm text-slate-400 font-medium truncate">{stat.subValue}</span>}
               </div>
             </div>
           </div>
@@ -139,14 +139,14 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Activity & Shortcuts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
          {/* Recent Cases List */}
          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-               <h3 className="font-bold text-slate-800 text-lg flex items-center">
-                 <Clock className="w-5 h-5 mr-2 text-brand-600" /> 最新入库案例
+            <div className="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between">
+               <h3 className="font-bold text-slate-800 text-base md:text-lg flex items-center">
+                 <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2 text-brand-600" /> 最新入库案例
                </h3>
-               <Link to="/cases" className="text-sm text-brand-600 hover:text-brand-700 font-medium">查看全部</Link>
+               <Link to="/cases" className="text-xs md:text-sm text-brand-600 hover:text-brand-700 font-medium">查看全部</Link>
             </div>
             
             {loading ? (
@@ -156,16 +156,16 @@ const Dashboard: React.FC = () => {
                 {statsData.recentCases.map((c) => (
                   <Link to={`/cases/${c.id}`} key={c.id} className="block p-4 hover:bg-slate-50 transition-colors group">
                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0 pr-4">
+                        <div className="flex-1 min-w-0 pr-3 md:pr-4">
                            <h4 className="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-700">{c.title}</h4>
                            <div className="flex items-center mt-1 text-xs text-slate-500">
-                              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 mr-2">{c.author || '匿名'}</span>
+                              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 mr-2 max-w-[80px] truncate">{c.author || '匿名'}</span>
                               <span>{c.createDate ? new Date(c.createDate).toLocaleDateString() : ''}</span>
                            </div>
                         </div>
                         <div className="flex gap-1">
                            {c.tags?.slice(0, 2).map(tag => (
-                             <span key={tag} className="px-2 py-0.5 text-xs bg-brand-50 text-brand-600 rounded-full border border-brand-100 whitespace-nowrap">
+                             <span key={tag} className="px-1.5 py-0.5 text-[10px] md:text-xs bg-brand-50 text-brand-600 rounded-full border border-brand-100 whitespace-nowrap">
                                {tag}
                              </span>
                            ))}
@@ -180,12 +180,12 @@ const Dashboard: React.FC = () => {
          </div>
          
          {/* Shortcuts */}
-         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="font-bold text-slate-800 text-lg mb-4">快捷操作</h3>
-            <div className="space-y-3">
-               <Link to="/cases" className="w-full text-left p-4 rounded-lg border border-slate-100 hover:border-brand-200 hover:bg-brand-50 transition-colors flex items-center group">
-                  <span className="w-10 h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mr-4 group-hover:bg-brand-200 group-hover:text-brand-700 shadow-sm">
-                     <FileText className="w-5 h-5" />
+         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-6">
+            <h3 className="font-bold text-slate-800 text-base md:text-lg mb-4">快捷操作</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
+               <Link to="/cases" className="w-full text-left p-3 md:p-4 rounded-lg border border-slate-100 hover:border-brand-200 hover:bg-brand-50 transition-colors flex items-center group">
+                  <span className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mr-3 md:mr-4 group-hover:bg-brand-200 group-hover:text-brand-700 shadow-sm flex-shrink-0">
+                     <FileText className="w-4 h-4 md:w-5 md:h-5" />
                   </span>
                   <div>
                     <span className="block text-sm font-bold text-slate-700 group-hover:text-brand-800">新增风险案例</span>
@@ -193,9 +193,9 @@ const Dashboard: React.FC = () => {
                   </div>
                </Link>
                
-               <Link to="/tags" className="w-full text-left p-4 rounded-lg border border-slate-100 hover:border-amber-200 hover:bg-amber-50 transition-colors flex items-center group">
-                  <span className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-4 group-hover:bg-amber-200 group-hover:text-amber-700 shadow-sm">
-                     <AlertTriangle className="w-5 h-5" />
+               <Link to="/tags" className="w-full text-left p-3 md:p-4 rounded-lg border border-slate-100 hover:border-amber-200 hover:bg-amber-50 transition-colors flex items-center group">
+                  <span className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-3 md:mr-4 group-hover:bg-amber-200 group-hover:text-amber-700 shadow-sm flex-shrink-0">
+                     <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
                   </span>
                   <div>
                     <span className="block text-sm font-bold text-slate-700 group-hover:text-amber-800">风险分布统计</span>

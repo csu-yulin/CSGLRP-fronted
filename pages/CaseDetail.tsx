@@ -166,7 +166,7 @@ const CaseDetail: React.FC = () => {
     : (data.attachments || []);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20 print:pb-0 print:max-w-none">
+    <div className="max-w-6xl mx-auto space-y-4 md:space-y-6 pb-20 print:pb-0 print:max-w-none">
       
       {/* Image Preview Modal */}
       {previewImage && (
@@ -188,15 +188,15 @@ const CaseDetail: React.FC = () => {
 
       {/* Top Nav - Hidden on Print */}
       <div className="flex items-center justify-between print:hidden">
-        <button onClick={() => navigate('/cases')} className="flex items-center text-slate-500 hover:text-brand-600 transition-colors font-medium">
+        <button onClick={() => navigate('/cases')} className="flex items-center text-slate-500 hover:text-brand-600 transition-colors font-medium text-sm md:text-base">
           <ArrowLeft className="w-4 h-4 mr-2" /> 返回列表
         </button>
         <button 
           onClick={handlePrint}
-          className="text-slate-500 hover:text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg flex items-center shadow-sm transition-all" 
+          className="text-slate-500 hover:text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg flex items-center shadow-sm transition-all text-xs md:text-sm" 
           title="打印/导出PDF"
         >
-           <Printer className="w-4 h-4 mr-2" /> 打印 / 导出PDF
+           <Printer className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">打印 / 导出PDF</span><span className="sm:hidden">打印</span>
         </button>
       </div>
 
@@ -204,83 +204,83 @@ const CaseDetail: React.FC = () => {
       <div className="bg-white rounded-xl shadow-card border border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none">
         
         {/* Document Header */}
-        <div className="border-b border-slate-100 bg-slate-50/50 p-8 md:p-10 relative print:bg-white print:border-b-2 print:border-slate-800 print:p-0 print:pb-6 print:mb-6">
-          <div className="flex flex-col md:flex-row gap-6 justify-between items-start relative z-10">
-             <div className="space-y-4 flex-1">
+        <div className="border-b border-slate-100 bg-slate-50/50 p-5 md:p-10 relative print:bg-white print:border-b-2 print:border-slate-800 print:p-0 print:pb-6 print:mb-6">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-between items-start relative z-10">
+             <div className="space-y-3 md:space-y-4 flex-1 w-full">
                 <div className="flex flex-wrap gap-2 print:hidden">
                   {data.tags && data.tags.map(tag => (
-                    <span key={tag} className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-white text-brand-600 border border-brand-100 shadow-sm">
+                    <span key={tag} className="flex items-center text-[10px] md:text-xs font-semibold px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-white text-brand-600 border border-brand-100 shadow-sm">
                       <Tag className="w-3 h-3 mr-1.5" /> {tag}
                     </span>
                   ))}
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight print:text-2xl">
+                <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight print:text-2xl break-words">
                   {data.title}
                 </h1>
-                <div className="flex items-center gap-6 text-sm text-slate-500 pt-2 print:text-xs">
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
-                    <User className="w-4 h-4 mr-2 text-slate-400" /> <span className="font-medium text-slate-700">{data.author || '匿名'}</span>
+                <div className="flex flex-wrap items-center gap-3 md:gap-6 text-xs md:text-sm text-slate-500 pt-1 md:pt-2 print:text-xs">
+                  <div className="flex items-center bg-white px-2 py-1 md:px-3 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
+                    <User className="w-3 h-3 md:w-4 md:h-4 mr-1.5 text-slate-400" /> <span className="font-medium text-slate-700">{data.author || '匿名'}</span>
                   </div>
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" /> {data.createDate ? new Date(data.createDate).toLocaleDateString() : '未知日期'}
+                  <div className="flex items-center bg-white px-2 py-1 md:px-3 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-1.5 text-slate-400" /> {data.createDate ? new Date(data.createDate).toLocaleDateString() : '未知日期'}
                   </div>
                 </div>
              </div>
 
              {/* Admin Actions - Hidden on Print */}
              {user?.isAdmin && (
-               <div className="flex gap-3 flex-shrink-0 print:hidden">
+               <div className="flex gap-2 md:gap-3 flex-shrink-0 print:hidden w-full md:w-auto pt-2 md:pt-0">
                  <button 
                     onClick={() => setIsEditModalOpen(true)}
-                    className="flex items-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg transition-all shadow-sm font-medium"
+                    className="flex-1 md:flex-none flex justify-center items-center px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg transition-all shadow-sm font-medium text-xs md:text-sm"
                  >
-                   <Edit className="w-4 h-4 mr-2" /> 编辑
+                   <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1.5" /> 编辑
                  </button>
                  <button 
                     onClick={handleDelete}
-                    className="flex items-center px-4 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-100 rounded-lg transition-all shadow-sm font-medium"
+                    className="flex-1 md:flex-none flex justify-center items-center px-3 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-100 rounded-lg transition-all shadow-sm font-medium text-xs md:text-sm"
                  >
-                   <Trash className="w-4 h-4 mr-2" /> 删除
+                   <Trash className="w-3 h-3 md:w-4 md:h-4 mr-1.5" /> 删除
                  </button>
                </div>
              )}
           </div>
           
           {/* Watermark/Decoration */}
-          <Shield className="absolute top-8 right-8 w-64 h-64 text-slate-100/50 -rotate-12 pointer-events-none print:hidden" />
+          <Shield className="absolute top-4 right-4 w-32 h-32 md:top-8 md:right-8 md:w-64 md:h-64 text-slate-100/50 -rotate-12 pointer-events-none print:hidden" />
         </div>
 
         {/* Content Body */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:divide-x divide-slate-100 print:block print:divide-none">
           
           {/* Left Column (Main Content) */}
-          <div className="lg:col-span-8 p-8 md:p-10 space-y-10 print:p-0 print:col-span-12">
+          <div className="lg:col-span-8 p-5 md:p-10 space-y-8 md:space-y-10 print:p-0 print:col-span-12">
              
              {/* Section 1 */}
              <section className="print:mb-6">
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
-                 <span className="w-1.5 h-6 bg-brand-600 mr-3 rounded-full print:hidden"></span>
+               <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1 md:w-1.5 h-5 md:h-6 bg-brand-600 mr-2 md:mr-3 rounded-full print:hidden"></span>
                  一、案件记录
                </h2>
-               <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed text-justify bg-slate-50 p-6 rounded-xl border border-slate-100 print:bg-white print:p-0 print:border-none print:text-black">
+               <div className="prose prose-sm md:prose-base prose-slate max-w-none text-slate-600 leading-relaxed text-justify bg-slate-50 p-4 md:p-6 rounded-xl border border-slate-100 print:bg-white print:p-0 print:border-none print:text-black">
                  {data.caseRecord}
                </div>
              </section>
 
              {/* Section 2 */}
              <section className="print:mb-6">
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
-                 <span className="w-1.5 h-6 bg-amber-500 mr-3 rounded-full print:hidden"></span>
+               <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1 md:w-1.5 h-5 md:h-6 bg-amber-500 mr-2 md:mr-3 rounded-full print:hidden"></span>
                  二、法律规定与风险
                </h2>
-               <div className="space-y-6 print:space-y-4">
+               <div className="space-y-4 md:space-y-6 print:space-y-4">
                  {data.legalProvisions && data.legalProvisions.map((reg, idx) => (
                    <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow print:border print:shadow-none print:break-inside-avoid">
-                     <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 font-bold text-slate-800 flex items-start gap-3 print:bg-slate-100">
-                        <FileText className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0 print:text-black" />
+                     <div className="px-4 py-2.5 md:px-5 md:py-3 bg-slate-50 border-b border-slate-100 font-bold text-slate-800 flex items-start gap-2 md:gap-3 print:bg-slate-100 text-sm md:text-base">
+                        <FileText className="w-4 h-4 md:w-5 md:h-5 text-amber-500 mt-0.5 flex-shrink-0 print:text-black" />
                         {reg.lawName}
                      </div>
-                     <div className="p-5 text-slate-600 text-sm leading-relaxed print:text-black">
+                     <div className="p-4 md:p-5 text-slate-600 text-sm leading-relaxed print:text-black">
                        {reg.content}
                      </div>
                    </div>
@@ -288,14 +288,14 @@ const CaseDetail: React.FC = () => {
                  
                  {/* Risk Summary */}
                  {data.riskSummary && (
-                   <div className="bg-red-50 border border-red-100 rounded-xl p-6 mt-4 relative print:bg-white print:border-slate-300 print:break-inside-avoid">
-                     <div className="flex gap-4">
-                        <div className="p-2 bg-red-100 rounded-lg h-fit text-red-600 print:hidden">
-                           <AlertTriangle className="w-5 h-5" />
+                   <div className="bg-red-50 border border-red-100 rounded-xl p-4 md:p-6 mt-4 relative print:bg-white print:border-slate-300 print:break-inside-avoid">
+                     <div className="flex gap-3 md:gap-4">
+                        <div className="p-1.5 md:p-2 bg-red-100 rounded-lg h-fit text-red-600 print:hidden flex-shrink-0">
+                           <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
                         </div>
                         <div>
-                           <h3 className="text-red-800 font-bold mb-2 print:text-black">风险总结</h3>
-                           <p className="text-red-700/80 leading-relaxed text-sm print:text-black">{data.riskSummary}</p>
+                           <h3 className="text-red-800 font-bold mb-1 md:mb-2 print:text-black text-sm md:text-base">风险总结</h3>
+                           <p className="text-red-700/80 leading-relaxed text-xs md:text-sm print:text-black">{data.riskSummary}</p>
                         </div>
                      </div>
                    </div>
@@ -305,17 +305,17 @@ const CaseDetail: React.FC = () => {
 
              {/* Attachments Section */}
              <section className="print:mb-6 pt-6 border-t border-slate-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-slate-800 flex items-center print:text-lg">
-                    <span className="w-1.5 h-6 bg-indigo-500 mr-3 rounded-full print:hidden"></span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                  <h2 className="text-lg md:text-xl font-bold text-slate-800 flex items-center print:text-lg">
+                    <span className="w-1 md:w-1.5 h-5 md:h-6 bg-indigo-500 mr-2 md:mr-3 rounded-full print:hidden"></span>
                     附件资料
                   </h2>
                   {user?.isAdmin && selectedAttachments.size > 0 && (
                      <button 
                        onClick={handleBatchDelete}
-                       className="text-sm text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-md flex items-center transition-colors print:hidden"
+                       className="text-xs md:text-sm text-red-600 hover:bg-red-50 px-2 py-1 md:px-3 md:py-1.5 rounded-md flex items-center transition-colors print:hidden self-start sm:self-auto"
                      >
-                        <Trash className="w-4 h-4 mr-1.5" /> 批量删除 ({selectedAttachments.size})
+                        <Trash className="w-3 h-3 md:w-4 md:h-4 mr-1.5" /> 批量删除 ({selectedAttachments.size})
                      </button>
                   )}
                 </div>
@@ -337,7 +337,7 @@ const CaseDetail: React.FC = () => {
                                  <div className="flex-shrink-0 mr-3">
                                     <input 
                                        type="checkbox" 
-                                       className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity block"
+                                       className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100 checked:opacity-100 transition-opacity block"
                                        checked={selectedAttachments.has(file.ossKey)}
                                        onChange={() => toggleAttachmentSelection(file.ossKey)}
                                     />
@@ -378,7 +378,7 @@ const CaseDetail: React.FC = () => {
                                  {user?.isAdmin && (
                                     <button 
                                       onClick={() => handleSingleDelete(file)}
-                                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity" 
+                                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" 
                                       title="删除"
                                     >
                                        <Trash className="w-4 h-4" />
@@ -408,19 +408,19 @@ const CaseDetail: React.FC = () => {
           </div>
 
           {/* Right Column (Measures) */}
-          <div className="lg:col-span-4 bg-slate-50/30 p-8 md:p-10 print:p-0 print:bg-white print:mt-6">
+          <div className="lg:col-span-4 bg-slate-50/30 p-5 md:p-10 print:p-0 print:bg-white print:mt-6">
              <div className="sticky top-8 print:static">
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
-                 <span className="w-1.5 h-6 bg-emerald-500 mr-3 rounded-full print:hidden"></span>
+               <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1 md:w-1.5 h-5 md:h-6 bg-emerald-500 mr-2 md:mr-3 rounded-full print:hidden"></span>
                  三、防控措施
                </h2>
-               <div className="bg-white border border-emerald-100 rounded-xl p-6 shadow-soft relative overflow-hidden print:border print:border-slate-300 print:shadow-none print:p-4">
+               <div className="bg-white border border-emerald-100 rounded-xl p-4 md:p-6 shadow-soft relative overflow-hidden print:border print:border-slate-300 print:shadow-none print:p-4">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 z-0 print:hidden"></div>
-                  <ul className="space-y-6 relative z-10 print:space-y-2">
+                  <ul className="space-y-4 md:space-y-6 relative z-10 print:space-y-2">
                     {data.preventionMeasures && data.preventionMeasures.map((m, idx) => (
-                      <li key={idx} className="flex gap-4 group print:gap-2">
+                      <li key={idx} className="flex gap-3 md:gap-4 group print:gap-2">
                         <div className="flex-none pt-0.5">
-                           <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold border border-emerald-200 shadow-sm print:border-slate-400 print:text-black print:bg-white">
+                           <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] md:text-xs font-bold border border-emerald-200 shadow-sm print:border-slate-400 print:text-black print:bg-white">
                               {idx + 1}
                            </div>
                         </div>

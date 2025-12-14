@@ -209,11 +209,11 @@ const CaseList: React.FC = () => {
     <div className="space-y-6 pb-20">
       
       {/* Header & Stats */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 md:gap-6">
         <div className="flex items-center justify-between">
            <div>
-              <h1 className="text-2xl font-bold text-slate-800 tracking-tight">案例管理库</h1>
-              <p className="text-slate-500 text-sm mt-1">集中管理法律风险案例，支持多维检索与分析</p>
+              <h1 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">案例管理库</h1>
+              <p className="text-slate-500 text-xs md:text-sm mt-1">集中管理法律风险案例，支持多维检索与分析</p>
            </div>
            {user?.isAdmin && (
              <div className="hidden md:block">
@@ -228,15 +228,15 @@ const CaseList: React.FC = () => {
         </div>
 
         {/* Stats Cards - Now using real data */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
            {stats.map((stat, idx) => (
-             <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+             <div key={idx} className="bg-white border border-slate-200 rounded-xl p-3 md:p-4 shadow-sm flex items-center justify-between">
                 <div className="min-w-0">
-                   <p className="text-xs text-slate-500 font-medium mb-1 truncate">{stat.label}</p>
-                   <p className="text-xl font-bold text-slate-800 truncate" title={String(stat.value)}>{stat.value}</p>
+                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mb-1 truncate">{stat.label}</p>
+                   <p className="text-lg md:text-xl font-bold text-slate-800 truncate" title={String(stat.value)}>{stat.value}</p>
                 </div>
                 <div className={`p-2 rounded-lg ${stat.bg} flex-shrink-0 ml-2`}>
-                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                   <stat.icon className={`w-4 h-4 md:w-5 md:h-5 ${stat.color}`} />
                 </div>
              </div>
            ))}
@@ -259,7 +259,7 @@ const CaseList: React.FC = () => {
              />
            </div>
            <div className="flex gap-3">
-              <div className="relative min-w-[160px]">
+              <div className="relative flex-1 md:flex-none md:min-w-[160px]">
                  <select 
                     className="w-full pl-3 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none appearance-none cursor-pointer shadow-sm"
                     value={selectedTag}
@@ -276,7 +276,7 @@ const CaseList: React.FC = () => {
               {/* Dynamic Filter/Sort/Reset Button */}
               <button 
                 onClick={handleFilterOrSort}
-                className={`px-4 py-2.5 border rounded-lg transition-colors shadow-sm flex items-center text-sm font-medium ${
+                className={`px-4 py-2.5 border rounded-lg transition-colors shadow-sm flex items-center text-sm font-medium whitespace-nowrap ${
                   (keyword || selectedTag) 
                     ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' // Reset Mode
                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900' // Sort Mode
@@ -285,11 +285,11 @@ const CaseList: React.FC = () => {
               >
                  {(keyword || selectedTag) ? (
                     <>
-                      <RotateCcw className="w-4 h-4 mr-2" /> 重置
+                      <RotateCcw className="w-4 h-4 mr-0 md:mr-2" /> <span className="hidden md:inline">重置</span>
                     </>
                  ) : (
                     <>
-                      <ArrowUpDown className="w-4 h-4 mr-2" /> {sortDir === 'desc' ? '最新' : '最早'}
+                      <ArrowUpDown className="w-4 h-4 mr-0 md:mr-2" /> <span className="hidden md:inline">{sortDir === 'desc' ? '最新' : '最早'}</span>
                     </>
                  )}
               </button>
@@ -301,11 +301,11 @@ const CaseList: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">案例信息</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-64">标签</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">作者</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">创建日期</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right w-32">操作</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">案例信息</th>
+                <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-64">标签</th>
+                <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">作者</th>
+                <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">创建日期</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right w-20 md:w-32">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -313,23 +313,36 @@ const CaseList: React.FC = () => {
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="animate-pulse bg-white">
                     <td className="px-6 py-4"><div className="h-5 bg-slate-100 rounded w-64 mb-2"></div><div className="h-3 bg-slate-50 rounded w-48"></div></td>
-                    <td className="px-6 py-4"><div className="h-6 bg-slate-100 rounded w-20"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-16"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-slate-100 rounded w-24"></div></td>
+                    <td className="hidden md:table-cell px-6 py-4"><div className="h-6 bg-slate-100 rounded w-20"></div></td>
+                    <td className="hidden lg:table-cell px-6 py-4"><div className="h-4 bg-slate-100 rounded w-16"></div></td>
+                    <td className="hidden sm:table-cell px-6 py-4"><div className="h-4 bg-slate-100 rounded w-24"></div></td>
                     <td className="px-6 py-4"></td>
                   </tr>
                 ))
               ) : cases.length > 0 ? (
                 cases.map((c, index) => (
                   <tr key={c.id} className={`group hover:bg-brand-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-3 md:px-6 md:py-4">
                        <Link to={`/cases/${c.id}`} className="block">
-                          <p className="text-base font-semibold text-brand-700 hover:text-brand-600 hover:underline truncate max-w-md" title={c.title}>
+                          <p className="text-sm md:text-base font-semibold text-brand-700 hover:text-brand-600 hover:underline truncate max-w-[200px] md:max-w-md" title={c.title}>
                              {c.title}
                           </p>
+                          {/* Mobile only info */}
+                          <div className="flex md:hidden items-center mt-1 text-xs text-slate-500 space-x-2">
+                             <span>{c.author || '匿名'}</span>
+                             <span>•</span>
+                             <span>{c.createDate ? new Date(c.createDate).toISOString().split('T')[0] : '-'}</span>
+                          </div>
+                          <div className="flex md:hidden flex-wrap gap-1 mt-1.5">
+                             {c.tags && c.tags.slice(0, 2).map(t => (
+                               <span key={t} className="px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] border border-slate-200">
+                                 {t}
+                               </span>
+                             ))}
+                          </div>
                        </Link>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden md:table-cell px-6 py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {c.tags && c.tags.slice(0, 3).map(t => (
                           <span key={t} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 group-hover:border-brand-200 group-hover:bg-brand-50 group-hover:text-brand-700 transition-colors">
@@ -341,7 +354,7 @@ const CaseList: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden lg:table-cell px-6 py-4">
                        <div className="flex items-center">
                           <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs flex items-center justify-center mr-2 font-bold">
                              {c.author?.charAt(0)}
@@ -349,17 +362,17 @@ const CaseList: React.FC = () => {
                           <span className="text-sm text-slate-600">{c.author}</span>
                        </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500 font-mono">
+                    <td className="hidden sm:table-cell px-6 py-4 text-sm text-slate-500 font-mono">
                        {c.createDate ? new Date(c.createDate).toISOString().split('T')[0] : '-'}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                       <div className="flex items-center justify-end gap-2">
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-right">
+                       <div className="flex items-center justify-end gap-1 md:gap-2">
                           <Link 
                              to={`/cases/${c.id}`} 
                              className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-all"
                              title="查看详情"
                           >
-                             <Eye className="w-4 h-4" />
+                             <Eye className="w-4 h-4 md:w-5 md:h-5" />
                           </Link>
                           {user?.isAdmin && (
                             <>
@@ -368,14 +381,14 @@ const CaseList: React.FC = () => {
                                  className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-all"
                                  title="编辑"
                                >
-                                  <Edit2 className="w-4 h-4" />
+                                  <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
                                </button>
                                <button 
                                  onClick={() => handleDelete(c.id)}
                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
                                  title="删除"
                                >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                </button>
                             </>
                           )}
@@ -410,15 +423,15 @@ const CaseList: React.FC = () => {
 
         {/* Pagination Footer */}
         {totalPages > 0 && (
-           <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-              <span className="text-sm text-slate-500 font-medium">
-                 显示第 {page} 页，共 {totalPages} 页 <span className="text-slate-400 mx-1">|</span> 总计 {totalElements} 条
+           <div className="px-4 py-3 md:px-6 md:py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+              <span className="text-xs md:text-sm text-slate-500 font-medium">
+                 <span className="hidden md:inline">显示第 {page} 页，共 {totalPages} 页 <span className="text-slate-400 mx-1">|</span></span> 总计 {totalElements} 条
               </span>
               <div className="flex gap-2">
                  <button 
                     disabled={page === 1}
                     onClick={() => handlePageChange(page - 1)}
-                    className="p-2 border border-slate-200 bg-white rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                    className="p-1.5 md:p-2 border border-slate-200 bg-white rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                  >
                     <ChevronLeft className="w-4 h-4" />
                  </button>
@@ -428,7 +441,7 @@ const CaseList: React.FC = () => {
                  <button 
                     disabled={page === totalPages}
                     onClick={() => handlePageChange(page + 1)}
-                    className="p-2 border border-slate-200 bg-white rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                    className="p-1.5 md:p-2 border border-slate-200 bg-white rounded-lg text-slate-500 hover:text-brand-600 hover:border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                  >
                     <ChevronRight className="w-4 h-4" />
                  </button>
@@ -441,10 +454,10 @@ const CaseList: React.FC = () => {
       {user?.isAdmin && (
          <button 
             onClick={() => { setEditingCase(null); setIsModalOpen(true); }}
-            className="fixed bottom-8 right-8 w-14 h-14 bg-brand-600 hover:bg-brand-500 text-white rounded-full shadow-xl shadow-brand-600/40 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40 group"
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-12 h-12 md:w-14 md:h-14 bg-brand-600 hover:bg-brand-500 text-white rounded-full shadow-xl shadow-brand-600/40 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40 group"
          >
-            <Plus className="w-7 h-7" />
-            <span className="absolute right-full mr-4 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <Plus className="w-6 h-6 md:w-7 md:h-7" />
+            <span className="absolute right-full mr-4 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
                新增案例
             </span>
          </button>
