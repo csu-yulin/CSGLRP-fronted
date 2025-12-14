@@ -228,14 +228,6 @@ const CaseDetail: React.FC = () => {
                     ))}
                   </ul>
                </div>
-               
-               {/* Quick Info Box - Hidden on Print */}
-               <div className="mt-8 bg-slate-100 rounded-xl p-5 border border-slate-200 print:hidden">
-                  <h4 className="font-bold text-slate-700 mb-3 text-sm">系统提示</h4>
-                  <p className="text-xs text-slate-500 leading-normal">
-                     本文档由系统自动生成，法律条款更新具有时效性，请在实际应用中核对最新法规。
-                  </p>
-               </div>
              </div>
           </div>
 

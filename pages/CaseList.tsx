@@ -162,7 +162,7 @@ const CaseList: React.FC = () => {
      }
   };
 
-  // CSV Export Function
+  // CSV Export Function (Kept logic for potential future use, button removed)
   const handleExport = () => {
     if (!cases || cases.length === 0) {
       return toast.error('当前列表没有数据可导出');
@@ -320,16 +320,6 @@ const CaseList: React.FC = () => {
                     </>
                  )}
               </button>
-
-              {user?.isAdmin && (
-                 <button 
-                   onClick={handleExport}
-                   className="px-3 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-colors shadow-sm" 
-                   title="导出当前列表为CSV"
-                 >
-                    <Download className="w-4 h-4" />
-                 </button>
-              )}
            </div>
         </div>
 
