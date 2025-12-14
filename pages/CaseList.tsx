@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { 
   Plus, Search, Filter, ChevronLeft, ChevronRight, 
   FileText, Trash2, Edit2, Download, SlidersHorizontal, 
-  Clock, Tag as TagIcon, Eye 
+  Clock, Tag as TagIcon, Eye, ArrowUpDown, RotateCcw
 } from 'lucide-react';
 
 const CaseList: React.FC = () => {
@@ -32,6 +32,7 @@ const CaseList: React.FC = () => {
   // Filters
   const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
   const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [availableTags, setAvailableTags] = useState<TagStat[]>([]);
   
   // Modal State
@@ -66,7 +67,7 @@ const CaseList: React.FC = () => {
       const params: any = {
         page: page, 
         size: 10,
-        sortDir: 'desc',
+        sortDir: sortDir,
         sortBy: 'createDate'
       };
       if (keyword) params.keyword = keyword;
@@ -110,7 +111,7 @@ const CaseList: React.FC = () => {
   useEffect(() => {
     fetchCases();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, keyword, selectedTag]);
+  }, [page, keyword, selectedTag, sortDir]);
 
   const handleCreateOrUpdate = async (data: CaseFormData) => {
     setIsSubmitting(true);
@@ -159,6 +160,68 @@ const CaseList: React.FC = () => {
      if (newPage >= 1 && newPage <= totalPages) {
         setPage(newPage);
      }
+  };
+
+  // CSV Export Function
+  const handleExport = () => {
+    if (!cases || cases.length === 0) {
+      return toast.error('当前列表没有数据可导出');
+    }
+
+    try {
+      // 1. Prepare Headers
+      const headers = ['案例ID', '标题', '作者', '创建日期', '标签', '风险摘要'];
+      
+      // 2. Format Content (Handle commas/quotes in CSV)
+      const csvRows = cases.map(c => {
+        const cleanTitle = (c.title || '').replace(/"/g, '""');
+        const cleanSummary = (c.riskSummary || '').replace(/"/g, '""').replace(/\n/g, ' ');
+        const cleanTags = (c.tags || []).join(';');
+        
+        return [
+          c.id,
+          `"${cleanTitle}"`,
+          c.author,
+          c.createDate ? new Date(c.createDate).toLocaleDateString() : '',
+          `"${cleanTags}"`,
+          `"${cleanSummary}"`
+        ].join(',');
+      });
+
+      // 3. Combine with BOM for Excel Chinese support
+      const csvContent = "\uFEFF" + headers.join(',') + '\n' + csvRows.join('\n');
+      
+      // 4. Create Download Link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `法律风险案例导出_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('已导出当前页数据');
+    } catch (e) {
+      console.error(e);
+      toast.error('导出失败');
+    }
+  };
+
+  // Toggle Filters or Sort
+  const handleFilterOrSort = () => {
+    if (keyword || selectedTag) {
+      // Reset Mode
+      setKeyword('');
+      setSelectedTag('');
+      setPage(1);
+      toast.success('筛选条件已重置');
+    } else {
+      // Sort Toggle Mode
+      const newDir = sortDir === 'desc' ? 'asc' : 'desc';
+      setSortDir(newDir);
+      toast.success(newDir === 'desc' ? '已按时间倒序排列 (最新在前)' : '已按时间正序排列 (最早在前)');
+    }
   };
 
   // Dynamic Stats configuration
@@ -236,11 +299,34 @@ const CaseList: React.FC = () => {
                  </select>
                  <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm flex items-center text-sm font-medium">
-                 <SlidersHorizontal className="w-4 h-4 mr-2" /> 筛选
+              
+              {/* Dynamic Filter/Sort/Reset Button */}
+              <button 
+                onClick={handleFilterOrSort}
+                className={`px-4 py-2.5 border rounded-lg transition-colors shadow-sm flex items-center text-sm font-medium ${
+                  (keyword || selectedTag) 
+                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' // Reset Mode
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900' // Sort Mode
+                }`}
+                title={keyword || selectedTag ? "重置所有筛选" : "切换时间排序"}
+              >
+                 {(keyword || selectedTag) ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 mr-2" /> 重置
+                    </>
+                 ) : (
+                    <>
+                      <ArrowUpDown className="w-4 h-4 mr-2" /> {sortDir === 'desc' ? '最新' : '最早'}
+                    </>
+                 )}
               </button>
+
               {user?.isAdmin && (
-                 <button className="px-3 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-brand-600 transition-colors shadow-sm" title="导出数据">
+                 <button 
+                   onClick={handleExport}
+                   className="px-3 py-2.5 bg-white border border-slate-200 text-slate-500 rounded-lg hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-colors shadow-sm" 
+                   title="导出当前列表为CSV"
+                 >
                     <Download className="w-4 h-4" />
                  </button>
               )}

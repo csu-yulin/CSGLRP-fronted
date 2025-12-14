@@ -30,19 +30,19 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] text-slate-800 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] text-slate-800 font-sans overflow-hidden print:h-auto print:overflow-visible">
       
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden print:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Sidebar - Collapsible on Desktop, Drawer on Mobile */}
+      {/* Sidebar - Hidden on Print */}
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transform transition-all duration-300 ease-in-out flex flex-col
+        fixed md:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200 shadow-[2px_0_8px_rgba(0,0,0,0.04)] transform transition-all duration-300 ease-in-out flex flex-col print:hidden
         ${isMobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'}
         ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}
       `}>
@@ -125,9 +125,9 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0">
+      <div className="flex-1 flex flex-col min-w-0 print:block print:w-full">
+        {/* Top Header - Hidden on Print */}
+        <header className="h-16 bg-white border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-10 sticky top-0 print:hidden">
           <div className="flex items-center">
             <button 
               className="md:hidden text-slate-500 hover:text-slate-700 mr-4 p-1 rounded-md hover:bg-slate-100"
@@ -149,8 +149,8 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth print:p-0 print:overflow-visible">
+          <div className="max-w-7xl mx-auto space-y-6 print:max-w-none print:space-y-0">
              <Outlet />
           </div>
         </main>

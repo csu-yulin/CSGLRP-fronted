@@ -74,6 +74,10 @@ const CaseDetail: React.FC = () => {
     }
   };
 
+  const handlePrint = () => {
+     window.print();
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[500px]">
       <div className="w-8 h-8 border-4 border-slate-200 border-t-brand-600 rounded-full animate-spin"></div>
@@ -83,47 +87,51 @@ const CaseDetail: React.FC = () => {
   if (!data) return <div className="p-10 text-center text-slate-500">未找到案例</div>;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
-      {/* Top Nav */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-6 pb-20 print:pb-0 print:max-w-none">
+      {/* Top Nav - Hidden on Print */}
+      <div className="flex items-center justify-between print:hidden">
         <button onClick={() => navigate('/cases')} className="flex items-center text-slate-500 hover:text-brand-600 transition-colors font-medium">
           <ArrowLeft className="w-4 h-4 mr-2" /> 返回列表
         </button>
-        <button className="text-slate-400 hover:text-slate-600" title="打印/导出">
-           <Printer className="w-5 h-5" />
+        <button 
+          onClick={handlePrint}
+          className="text-slate-500 hover:text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-lg flex items-center shadow-sm transition-all" 
+          title="打印/导出PDF"
+        >
+           <Printer className="w-4 h-4 mr-2" /> 打印 / 导出PDF
         </button>
       </div>
 
       {/* Main Document Card */}
-      <div className="bg-white rounded-xl shadow-card border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-card border border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none">
         
         {/* Document Header */}
-        <div className="border-b border-slate-100 bg-slate-50/50 p-8 md:p-10 relative">
+        <div className="border-b border-slate-100 bg-slate-50/50 p-8 md:p-10 relative print:bg-white print:border-b-2 print:border-slate-800 print:p-0 print:pb-6 print:mb-6">
           <div className="flex flex-col md:flex-row gap-6 justify-between items-start relative z-10">
              <div className="space-y-4 flex-1">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 print:hidden">
                   {data.tags && data.tags.map(tag => (
                     <span key={tag} className="flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-white text-brand-600 border border-brand-100 shadow-sm">
                       <Tag className="w-3 h-3 mr-1.5" /> {tag}
                     </span>
                   ))}
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight print:text-2xl">
                   {data.title}
                 </h1>
-                <div className="flex items-center gap-6 text-sm text-slate-500 pt-2">
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-6 text-sm text-slate-500 pt-2 print:text-xs">
+                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
                     <User className="w-4 h-4 mr-2 text-slate-400" /> <span className="font-medium text-slate-700">{data.author || '匿名'}</span>
                   </div>
-                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm">
+                  <div className="flex items-center bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm print:border-none print:px-0 print:shadow-none">
                     <Calendar className="w-4 h-4 mr-2 text-slate-400" /> {data.createDate ? new Date(data.createDate).toLocaleDateString() : '未知日期'}
                   </div>
                 </div>
              </div>
 
-             {/* Admin Actions */}
+             {/* Admin Actions - Hidden on Print */}
              {user?.isAdmin && (
-               <div className="flex gap-3 flex-shrink-0">
+               <div className="flex gap-3 flex-shrink-0 print:hidden">
                  <button 
                     onClick={() => setIsEditModalOpen(true)}
                     className="flex items-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg transition-all shadow-sm font-medium"
@@ -141,40 +149,40 @@ const CaseDetail: React.FC = () => {
           </div>
           
           {/* Watermark/Decoration */}
-          <Shield className="absolute top-8 right-8 w-64 h-64 text-slate-100/50 -rotate-12 pointer-events-none" />
+          <Shield className="absolute top-8 right-8 w-64 h-64 text-slate-100/50 -rotate-12 pointer-events-none print:hidden" />
         </div>
 
         {/* Content Body */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:divide-x divide-slate-100">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:divide-x divide-slate-100 print:block print:divide-none">
           
           {/* Left Column (Main Content) */}
-          <div className="lg:col-span-8 p-8 md:p-10 space-y-10">
+          <div className="lg:col-span-8 p-8 md:p-10 space-y-10 print:p-0 print:col-span-12">
              
              {/* Section 1 */}
-             <section>
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                 <span className="w-1.5 h-6 bg-brand-600 mr-3 rounded-full"></span>
+             <section className="print:mb-6">
+               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1.5 h-6 bg-brand-600 mr-3 rounded-full print:hidden"></span>
                  一、案件记录
                </h2>
-               <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed text-justify bg-slate-50 p-6 rounded-xl border border-slate-100">
+               <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed text-justify bg-slate-50 p-6 rounded-xl border border-slate-100 print:bg-white print:p-0 print:border-none print:text-black">
                  {data.caseRecord}
                </div>
              </section>
 
              {/* Section 2 */}
-             <section>
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                 <span className="w-1.5 h-6 bg-amber-500 mr-3 rounded-full"></span>
+             <section className="print:mb-6">
+               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1.5 h-6 bg-amber-500 mr-3 rounded-full print:hidden"></span>
                  二、法律规定与风险
                </h2>
-               <div className="space-y-6">
+               <div className="space-y-6 print:space-y-4">
                  {data.legalProvisions && data.legalProvisions.map((reg, idx) => (
-                   <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                     <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 font-bold text-slate-800 flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                   <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow print:border print:shadow-none print:break-inside-avoid">
+                     <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 font-bold text-slate-800 flex items-start gap-3 print:bg-slate-100">
+                        <FileText className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0 print:text-black" />
                         {reg.lawName}
                      </div>
-                     <div className="p-5 text-slate-600 text-sm leading-relaxed">
+                     <div className="p-5 text-slate-600 text-sm leading-relaxed print:text-black">
                        {reg.content}
                      </div>
                    </div>
@@ -182,14 +190,14 @@ const CaseDetail: React.FC = () => {
                  
                  {/* Risk Summary */}
                  {data.riskSummary && (
-                   <div className="bg-red-50 border border-red-100 rounded-xl p-6 mt-4 relative">
+                   <div className="bg-red-50 border border-red-100 rounded-xl p-6 mt-4 relative print:bg-white print:border-slate-300 print:break-inside-avoid">
                      <div className="flex gap-4">
-                        <div className="p-2 bg-red-100 rounded-lg h-fit text-red-600">
+                        <div className="p-2 bg-red-100 rounded-lg h-fit text-red-600 print:hidden">
                            <AlertTriangle className="w-5 h-5" />
                         </div>
                         <div>
-                           <h3 className="text-red-800 font-bold mb-2">风险总结</h3>
-                           <p className="text-red-700/80 leading-relaxed text-sm">{data.riskSummary}</p>
+                           <h3 className="text-red-800 font-bold mb-2 print:text-black">风险总结</h3>
+                           <p className="text-red-700/80 leading-relaxed text-sm print:text-black">{data.riskSummary}</p>
                         </div>
                      </div>
                    </div>
@@ -199,30 +207,30 @@ const CaseDetail: React.FC = () => {
           </div>
 
           {/* Right Column (Measures) */}
-          <div className="lg:col-span-4 bg-slate-50/30 p-8 md:p-10">
-             <div className="sticky top-8">
-               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                 <span className="w-1.5 h-6 bg-emerald-500 mr-3 rounded-full"></span>
+          <div className="lg:col-span-4 bg-slate-50/30 p-8 md:p-10 print:p-0 print:bg-white print:mt-6">
+             <div className="sticky top-8 print:static">
+               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center print:mb-2 print:text-lg">
+                 <span className="w-1.5 h-6 bg-emerald-500 mr-3 rounded-full print:hidden"></span>
                  三、防控措施
                </h2>
-               <div className="bg-white border border-emerald-100 rounded-xl p-6 shadow-soft relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                  <ul className="space-y-6 relative z-10">
+               <div className="bg-white border border-emerald-100 rounded-xl p-6 shadow-soft relative overflow-hidden print:border print:border-slate-300 print:shadow-none print:p-4">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 z-0 print:hidden"></div>
+                  <ul className="space-y-6 relative z-10 print:space-y-2">
                     {data.preventionMeasures && data.preventionMeasures.map((m, idx) => (
-                      <li key={idx} className="flex gap-4 group">
+                      <li key={idx} className="flex gap-4 group print:gap-2">
                         <div className="flex-none pt-0.5">
-                           <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold border border-emerald-200 shadow-sm group-hover:scale-110 transition-transform">
+                           <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold border border-emerald-200 shadow-sm print:border-slate-400 print:text-black print:bg-white">
                               {idx + 1}
                            </div>
                         </div>
-                        <p className="text-slate-600 text-sm leading-relaxed pt-0.5 font-medium">{m}</p>
+                        <p className="text-slate-600 text-sm leading-relaxed pt-0.5 font-medium print:text-black">{m}</p>
                       </li>
                     ))}
                   </ul>
                </div>
                
-               {/* Quick Info Box */}
-               <div className="mt-8 bg-slate-100 rounded-xl p-5 border border-slate-200">
+               {/* Quick Info Box - Hidden on Print */}
+               <div className="mt-8 bg-slate-100 rounded-xl p-5 border border-slate-200 print:hidden">
                   <h4 className="font-bold text-slate-700 mb-3 text-sm">系统提示</h4>
                   <p className="text-xs text-slate-500 leading-normal">
                      本文档由系统自动生成，法律条款更新具有时效性，请在实际应用中核对最新法规。
