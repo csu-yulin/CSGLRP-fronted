@@ -191,9 +191,9 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
                         <div>
                           <textarea
                             {...register(`legalProvisions.${index}.content` as const, { required: true })}
-                            rows={3}
+                            rows={4}
                             placeholder="法规具体内容..."
-                            className="w-full bg-transparent border-none px-0 py-1.5 text-sm text-slate-600 focus:ring-0 placeholder-slate-400 resize-none"
+                            className="w-full bg-transparent border-none px-0 py-1.5 text-sm text-slate-600 focus:ring-0 placeholder-slate-400 resize-y"
                           />
                         </div>
                       </div>
@@ -210,7 +210,7 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
                       <textarea
                         {...register("riskSummary")}
                         rows={3}
-                        className="w-full bg-red-50/30 border border-red-100 rounded-lg pl-10 pr-4 py-3 text-slate-700 focus:ring-2 focus:ring-red-500/10 focus:border-red-300 outline-none"
+                        className="w-full bg-red-50/30 border border-red-100 rounded-lg pl-10 pr-4 py-3 text-slate-700 focus:ring-2 focus:ring-red-500/10 focus:border-red-300 outline-none resize-y"
                         placeholder="对上述风险进行综合研判，重点提示..."
                       />
                    </div>
@@ -244,9 +244,10 @@ const CaseModal: React.FC<CaseModalProps> = ({ isOpen, onClose, onSubmit, initia
                         </div>
                       </div>
                       <div className="flex-1 relative">
-                        <input
+                        <textarea
                           {...register(`preventionMeasures.${index}.value` as const, { required: true })}
-                          className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all group-hover:bg-white"
+                          rows={2}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all group-hover:bg-white resize-y"
                           placeholder="请输入具体的防控措施..."
                         />
                       </div>

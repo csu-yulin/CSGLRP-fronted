@@ -145,6 +145,25 @@ const CaseList: React.FC = () => {
     }
   };
 
+  // Fetch full details before editing
+  const handleEditClick = async (id: string) => {
+    const loadingToast = toast.loading('正在加载详情...');
+    try {
+      const res = await caseService.getById(id);
+      if (res.data.code === 200) {
+        setEditingCase(res.data.data);
+        setIsModalOpen(true);
+      } else {
+        toast.error('加载案例详情失败');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('网络请求失败');
+    } finally {
+      toast.dismiss(loadingToast);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('确定要删除这个案例吗？此操作无法撤销。')) return;
     try {
@@ -160,52 +179,6 @@ const CaseList: React.FC = () => {
      if (newPage >= 1 && newPage <= totalPages) {
         setPage(newPage);
      }
-  };
-
-  // CSV Export Function (Kept logic for potential future use, button removed)
-  const handleExport = () => {
-    if (!cases || cases.length === 0) {
-      return toast.error('当前列表没有数据可导出');
-    }
-
-    try {
-      // 1. Prepare Headers
-      const headers = ['案例ID', '标题', '作者', '创建日期', '标签', '风险摘要'];
-      
-      // 2. Format Content (Handle commas/quotes in CSV)
-      const csvRows = cases.map(c => {
-        const cleanTitle = (c.title || '').replace(/"/g, '""');
-        const cleanSummary = (c.riskSummary || '').replace(/"/g, '""').replace(/\n/g, ' ');
-        const cleanTags = (c.tags || []).join(';');
-        
-        return [
-          c.id,
-          `"${cleanTitle}"`,
-          c.author,
-          c.createDate ? new Date(c.createDate).toLocaleDateString() : '',
-          `"${cleanTags}"`,
-          `"${cleanSummary}"`
-        ].join(',');
-      });
-
-      // 3. Combine with BOM for Excel Chinese support
-      const csvContent = "\uFEFF" + headers.join(',') + '\n' + csvRows.join('\n');
-      
-      // 4. Create Download Link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `法律风险案例导出_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success('已导出当前页数据');
-    } catch (e) {
-      console.error(e);
-      toast.error('导出失败');
-    }
   };
 
   // Toggle Filters or Sort
@@ -351,10 +324,9 @@ const CaseList: React.FC = () => {
                   <tr key={c.id} className={`group hover:bg-brand-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
                     <td className="px-6 py-4">
                        <Link to={`/cases/${c.id}`} className="block">
-                          <p className="text-sm font-semibold text-brand-700 hover:text-brand-600 hover:underline mb-1 truncate max-w-md" title={c.title}>
+                          <p className="text-base font-semibold text-brand-700 hover:text-brand-600 hover:underline truncate max-w-md" title={c.title}>
                              {c.title}
                           </p>
-                          <p className="text-xs text-slate-400 truncate max-w-xs">{c.id}</p>
                        </Link>
                     </td>
                     <td className="px-6 py-4">
@@ -392,7 +364,7 @@ const CaseList: React.FC = () => {
                           {user?.isAdmin && (
                             <>
                                <button 
-                                 onClick={() => { setEditingCase(c); setIsModalOpen(true); }}
+                                 onClick={() => handleEditClick(c.id)}
                                  className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-all"
                                  title="编辑"
                                >
